@@ -7,10 +7,12 @@ class TransformedCard extends StatefulWidget {
   final PlayingCard playingCard;
   final int contador;
   final double transformDistance;
+  int upwards =0;
 
   TransformedCard({
     @required this.playingCard,
     this.contador,
+    @required this.upwards,
     this.transformDistance = 15.0,
 
   });
@@ -36,6 +38,7 @@ class _TransformedCardState extends State<TransformedCard> {
   }
 
   Widget _buildCard() {
+    if(this.widget.upwards == 1){
         var draggable = Draggable(
           child: _buildFaceUpCard(),
           feedback: _buildFaceUpCard(),
@@ -45,7 +48,16 @@ class _TransformedCardState extends State<TransformedCard> {
             
         );
         return draggable;
-
+    }
+    else return Container(
+    height: 60.0,
+    width: 40.0,
+    decoration: BoxDecoration(
+      color: Colors.blue,
+      border: Border.all(color: Colors.black),
+      borderRadius: BorderRadius.circular(8.0),
+    ),
+  );
   }
 
 

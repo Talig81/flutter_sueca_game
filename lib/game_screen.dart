@@ -1,8 +1,9 @@
 import 'dart:math';
-import 'dart:developer';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_counter/cards.dart';
+import 'package:flutter_counter/suecamodel.dart';
 
 import 'TransformedCard.dart';
 
@@ -12,25 +13,21 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  List<PlayingCard> handCards = [];
-  List<PlayingCard> playCards = [];
-  List<PlayingCard> finalPlayCards = [];
-  int tempor = 0;
-  int nCardsPlayer=10;
-  int aux = 10;
-  int aux2 = 20;
-  int aux3 = 30;
+  
+  SuecaModel modelo = new SuecaModel();
+  
   bool accepted = false;
-  int acceptedCard;
-  String playSuit = 'spades';
-
   List<PlayingCard> deck = [];
-  int contador = 0;
+  int contador = -1;
+  int acceptedCard;
+  int cenas=1;
+  PlayingCard cardie;
 
   @override
   void initState() {
     super.initState();
-    _initialiseGame();
+    this.modelo.initial();
+    
   }
 
   @override
@@ -51,8 +48,8 @@ class _GameScreenState extends State<GameScreen> {
               ),
               splashColor: Colors.white,
               onTap: () {
-                Navigator.pop(context);
-                _initialiseGame();
+                super.initState();
+                
               },
             )
           ],
@@ -72,7 +69,7 @@ class _GameScreenState extends State<GameScreen> {
                   Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[_buildCardDeck(1)],
+                        children: <Widget>[buildFaceDown()],
                       ),
                       margin: new EdgeInsets.only(bottom: 20)),
                   Center(
@@ -85,11 +82,11 @@ class _GameScreenState extends State<GameScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
                                   Column(
-                                    children: <Widget>[_buildCardDeck(3)],
+                                    children: <Widget>[buildFaceDown()],
                                   ),
                                   Column(),
                                   Column(
-                                    children: <Widget>[_buildCardDeck(2)],
+                                    children: <Widget>[createCard(this.modelo.p1.hand[2], 1,false)],
                                   ),
                                 ],
                               ),
@@ -110,7 +107,9 @@ class _GameScreenState extends State<GameScreen> {
                                   return accepted
                                       ? Container(
                                         child: Row(children: <Widget>[
-                                          createCard(acceptedCard),
+                                          createCard(cardie,1,false),
+                                        
+                                          
                                         ],)
                                       )
                                       : Container(
@@ -126,6 +125,8 @@ class _GameScreenState extends State<GameScreen> {
                                   print("OnAccept: " + data.toString());
                                   accepted = true;
                                   acceptedCard = parseToInt(data);
+                                  print(acceptedCard);
+                                  _warnMe();
                                 },
                               ))
                             ],
@@ -134,49 +135,46 @@ class _GameScreenState extends State<GameScreen> {
                     color: Colors.green,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        for(int i = 0; i<nCardsPlayer;i++ )
-                          _buildColumn(1)
-                      ],
+                      children: <Widget>[ 
+                        for(PlayingCard c in this.modelo.p4.hand)     
+                              createCard(c,1, true),
+                        ]
                     ),
                   )
                 ]))));
   }
 
   // Build the deck of cards left after building card columns
-  Widget _buildCardDeck(int i) {
-    switch (i) {
-      case 4:
-        contador++;
-        return createCard(contador - 1);
-        break;
-      case 1:
-        aux++;
-        return createCard(aux - 1);
-        break;
-      case 2:
-        aux2++;
-        return createCard(aux2 - 1);
-        break;
-      case 3:
-        aux3++;
-        return createCard(aux3 - 1);
-        break;
-    }
-  }
+ 
 
-  Widget createCard(int cont) {
-    return Container(
+  Widget createCard(PlayingCard cont, int up, bool bo) {
+    if(bo) contador++;
+    return new Column(
+                          children: <Widget>[                
+      Container(
         child: Row(children: <Widget>[
       InkWell(
           child: Padding(
         padding: const EdgeInsets.all(4.0),
         child: TransformedCard(
-          playingCard: deck[cont],
-          contador: cont,
+          playingCard: cont,
+          contador: contador,
+          upwards: up,
         ),
       ))
-    ]));
+    ]))]);
+  }
+
+  Widget buildFaceDown(){
+      return createCard(this.modelo.deck[0],0,false);
+  }
+
+  void _warnMe(){
+    print("corri");
+    cardie = this.modelo.p4.hand[acceptedCard];
+    setState((){this.modelo.p4.removeCard(acceptedCard);print("im in");cenas=2;contador=0;});
+    print(this.modelo.p4.hand.length);
+    print("nao da");
   }
 
   int parseToInt (String cenas){
@@ -186,49 +184,7 @@ class _GameScreenState extends State<GameScreen> {
     return int.parse(lista[2]);
   }
 
-  void _initialiseGame() {
-    handCards = [];
-    playCards = [];
-    finalPlayCards = [];
+  
+  
 
-    deck = [];
-
-    CardSuit.values.forEach((suit) {
-      CardType.values.forEach((type) {
-        deck.add(PlayingCard(
-          cardType: type,
-          cardSuit: suit,
-        ));
-      });
-    });
-
-    shuffleDeck(deck);
-
-    for (int i = 0; i < 10; i++) {
-      playCards.add(deck[i]);
-    }
-  }
-
-  Widget _buildColumn(int cont){
-    return new Column(
-                          children: <Widget>[
-                            _buildCardDeck(cont),
-                          ],);
-  }
-
-  List shuffleDeck(List items) {
-    var random = new Random();
-
-    // Go through all elements.
-    for (var i = items.length - 1; i > 0; i--) {
-      // Pick a pseudorandom number according to the list length
-      var n = random.nextInt(i + 1);
-
-      var temp = items[i];
-      items[i] = items[n];
-      items[n] = temp;
-    }
-
-    return items;
-  }
 }
